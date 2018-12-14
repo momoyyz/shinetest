@@ -1,8 +1,6 @@
 package com.yyz.shinetest.web;
 
 import com.yyz.shinetest.common.enums.RunStatusEnum;
-import com.yyz.shinetest.nettydemo.ClientTest;
-import com.yyz.shinetest.nettydemo.ServerTest;
 import com.yyz.shinetest.service.ShineTestService;
 import com.yyz.shinetest.web.vo.ResultResponse;
 
