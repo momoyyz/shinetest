@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shine测试-mina</title>
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+    <script src="./bootstrap/js/jquery-3.3.1.min.js"></script>
+    <script>
+        $(function () {
+            /**
+             *失去焦点数据同步
+             **/
+            blurPortInput();
+            /**
+             *测试按钮点击事件
+             **/
+            $(document).on("click", ".testBut", testButFunction);
+            /**
+             * 开启服务
+             * */
+            $(document).on("click", ".openBut", clientOrServer);
+            /**
+             *点击报文进行编辑
+             * */
+            $(document).on("dblclick", ".serverSendMessageTd", serverSendMessageTd);
+            /**
+             *鼠标移除事件
+             * */
+            $(document).on("mouseout", ".serverSendMessageTd", mouseoutTo);
+
+            /**
+             * 自定义测试
+             * */
+            customTest();
+        });
+
+        /**
+         *点击测试按钮后执行
+         * */
+        function testButFunction() {
+            /*
+            *获取当前id
+            */
+            var id = $(this).attr("id");
+            /*
+            *准备参数
+            */
+            var testContent = $("." + id + "1").html();
+            var serverSendMessage = $("." + id + "2").html();
+            var testNum = $("." + id + "6").html();
+            if (!testNum) {
+                testNum = 0;
+            }
+            if (!serverSendMessage || $.trim(serverSendMessage) == "") {
+                alert("报文不能为空");
+                return false;
+            }
+            /*
+            清空数
+             */
+            $("#" + id).parent().siblings().html("");
+            $.ajax({
+                url: "minaSendMessage",
+                data: {
+                    testContent: testContent,
+                    message: serverSendMessage,
+                    // testNum: testNum
+                },
+                type: "post",
+                dataType: "json",
+                success: function (json) {
+
+                    /*
+                    *参数回显
+                     */
+                    if (json.status) {
+                        $("." + id + "1").html(testContent);
+                        $("." + id + "2").html(serverSendMessage);
+                          $("." + id + "3").html(json.msg);
+                        $("." + id + "5").html(json.status);
+                        $("." + id + "6").html(Number(testNum) + 1);
+                        returnMessage(id);
+                    } else {
+                        $("." + id + "1").html(testContent);
+                        $("." + id + "2").html(serverSendMessage);
+                         $("." + id + "3").html(json.msg);
+                    }
+
+
+                },
+                error: function () {
+                    alert("测试失败")
+                }
+            })
+        }
+
+        /***
+         * 失去焦点数据同步
+         */
+        function blurPortInput() {
+
+            $(".inputPort").blur(function () {
+                var id = $(this).attr("id");
+                var val = $("#" + id).val();
+                if (id == "inputPortServer") {
+                    $("#inputPortClient").val(val);
+                } else {
+                    $("#inputPortServer").val(val);
+                }
+                $("#openServer").removeAttr("disabled");
+                $("#openClient").removeAttr("disabled");
+
+            });
+        }
+
+        /**
+         * 开启服务
+         */
+        function clientOrServer() {
+            var id = $(this).attr("id");
+            var msgClass = id + "Msg";
+            var url;
+            if (id == "openServer") {
+                url="minaOpenServer";
+                $("." + msgClass).html("服务器启动中！");
+            } else {
+                url="minaOpenClient";
+                $("." + msgClass).html("客户端启动中！");
+            }
+
+            $.ajax({
+                url: url,
+                data: {
+                    port: $("." + id + "Port").val(),
+                    host: $("." + id + "Host").val()
+                },
+                type: "get",
+                dataType: "json",
+                success: function (json) {
+                    if (json.data) {
+                        $("#" + id).attr("disabled", "true")
+                        if (id == "openServer") {
+                            $("." + msgClass).html("服务端已启动！");
+                        } else {
+                            $("." + msgClass).html("客户端已启动！");
+                            $("#" + id).removeAttr("disabled")
+                        }
+                    } else {
+                        if (id == "openServer") {
+                            $("." + msgClass).html("服务端启动失败，或重复启动");
+                        } else {
+                            $("." + msgClass).html("客户端启动失败！");
+                        }
+                    }
+
+                },
+                error: function (json) {
+                    // alert("启动失败")
+                }
+            })
+        }
+
+        /**
+         *可编辑
+         * */
+        function serverSendMessageTd() {
+            var id = $(this).attr("tag");
+            var val = $("." + id + "2").html();
+            var html = ' <textarea class="form-control ' + id + '7 " rows="7" name=textarea>' + val + '</textarea>';
+            var regExt = new RegExp(/textarea/);//判断用户名是否合法
+            var ifTrue = regExt.test(val);
+            if (ifTrue) {
+                //  f(id);
+            } else {
+                $("." + id + "2").html(html);
+            }
+
+        }
+
+        /**
+         *鼠标移开
+         */
+        function mouseoutTo() {
+            var id = $(this).attr("tag");
+            $("." + id + "2").mouseleave(function () {
+                f(id);
+            });
+        }
+
+        function f(id) {
+            var val = $("." + id + "7").val();
+            $("." + id + "2").html(val);
+        }
+
+        /**
+         * 自定义测试
+         * */
+        function customTest() {
+            $("#custom").click(function () {
+
+                var id = "custom";
+                /*
+                  *准备参数
+                  */
+                var testContent = $("." + id + "1").val();
+                var serverSendMessage = $("." + id + "2").val();
+                var testNum = $("." + id + "6").html();
+                if (!testNum) {
+                    testNum = 0;
+                }
+                if (!serverSendMessage || $.trim(serverSendMessage) == "") {
+                    alert("报文不能为空");
+                    return false;
+                }
+                if (!testContent || $.trim(testContent) == "") {
+                    alert("测试功能说明不能问空");
+                    return false;
+                }
+                /*
+                清空数
+                 */
+                // $("#" + id).parent().siblings().html("");
+                $.ajax({
+                    url: "minaSendMessage",
+                    data: {
+                        testContent: testContent,
+                        message: serverSendMessage,
+                        //testNum: testNum
+                    },
+                    type: "post",
+                    dataType: "json",
+                    success: function (json) {
+                        /*
+                        *参数回显
+                         */
+                        // $("." + id + "1").val(json.data.testContent);
+                        // $("." + id + "2").val(json.data.serverSendMessage);
+                        $("." + id + "3").html(json.msg);
+                        // $("." + id + "4").html(json.data.clientReturnMessage);
+                        $("." + id + "5").html(json.status);
+                        $("." + id + "6").html(Number(testNum) + 1);
+                        returnMessage(id);
+                    },
+                    error: function (json) {
+
+                    }
+                })
+            })
+        }
+
+        /**
+         * 添加客户端
+         */
+        function addClient() {
+
+            $.ajax({
+                url: "minaOpenClient",
+                data: {
+                    port: $(".openClientPort").val(),
+                    host: $(".openClientHost").val()
+                },
+                type: "get",
+                dataType: "json",
+                success: function (json) {
+                    if(json.data){
+                        getClientNum()
+                    }
+                },
+                error: function (json) {
+                }
+            })
+        }
+
+        /**
+         * 获取客户端数量
+         */
+        function getClientNum() {
+
+            $.ajax({
+                url: "minaGetClientNum",
+                type: "get",
+                dataType: "json",
+                success: function (json) {
+                    if(json.status){
+                        $(".openClientMsg").html("客户端数量为："+json.data);
+                    }else {
+                        $(".openClientMsg").html("客户添加失败");
+                    }
+                },
+                error: function (json) {
+                }
+            })
+        }
+        function returnMessage(id) {
+            $.ajax({
+                url: "returnMessage",
+                type: "get",
+                dataType: "json",
+                success: function (json) {
+                    if(json.status){
+                        $("." + id + "4").html(json.data);
+                    }else {
+                        $("." + id + "4").html("返回数据失败");
+                    }
+                },
+                error: function (json) {
+                }
+            })
+        }
+    </script>
+</head>
+<body style="background-color: #f5f5f5">
+<div class="container" style="background-color: #fff">
+
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4 h1 center-block">Shine测试&nbsp;&nbsp;<a class="btn btn-default" href="index.html" role="button">返回</a></div>
+        <div class="col-md-4 h1"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+            <table class="table table-striped table-hover table-bordered">
+                <tr>
+                    <th width="30%">地址</th>
+                    <th width="20%">端口</th>
+                    <th width="50%">操作</th>
+                </tr>
+                <tr>
+                    <td><input type="text" class="form-control openServerHost" value="127.0.0.1" placeholder="服务端地址"
+                               readonly></td>
+                    <td><input type="text" id="inputPortServer" class="form-control inputPort openServerPort"
+                               value="8900" placeholder="服务端端口"></td>
+                    <td>
+                        <button type="button" id="openServer" class="btn btn-success openBut">开启服务端</button>
+                        <span class="openServerMsg"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="email" class="form-control openClientHost" value="127.0.0.1" placeholder="客户端地址"
+                               readonly></td>
+                    <td><input type="email" id="inputPortClient" class="form-control inputPort openClientPort"
+                               value="8900" placeholder="客户端端口"></td>
+                    <td>
+                        <button type="button" id="openClient" class="btn btn-success openBut">开启客户端</button>
+                        <button type="button" id="addClient" onclick="addClient()" class="btn btn-success">添加</button>
+                        <span class="openClientMsg"></span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+    <div class="row">
+        <table class="table table-striped table-hover table-bordered">
+            <tr>
+                <th width="10%">测试功能</th>
+                <th width="30%">报文</th>
+
+                <th width="10%">测试信息</th>
+                <th width="30%">应答消息</th>
+                <th width="5%">状态</th>
+                <th width="5%">次数</th>
+                <th width="10%">开始测试</th>
+            </tr>
+            <tr>
+                <td class="shutdownVM1">关闭虚机</td>
+                <td class="shutdownVM2 serverSendMessageTd" tag="shutdownVM">"content":
+                    {"header":{"action":"shutdownVM"},"data":{"cloudId" : "idValue" ,"shutdownMsg" : "shutdownMsg" }}
+                </td>
+                <td class="shutdownVM3"></td>
+                <td class="shutdownVM4"></td>
+                <td class="shutdownVM5"></td>
+                <td class="shutdownVM6"></td>
+                <td>
+                    <button type="button" id="shutdownVM" class="btn btn-primary testBut">开始测试</button>
+                </td>
+            </tr>
+            <tr>
+                <td class="shutdownVMFinish1">关闭虚机完成</td>
+                <td class="shutdownVMFinish2 serverSendMessageTd" tag="shutdownVMFinish">"content": { "header":{
+                    "action":"shutdownVMFinish" }, "data":{ "cloudId" : "idValue" }}
+                </td>
+                <td class="shutdownVMFinish3"></td>
+                <td class="shutdownVMFinish4"></td>
+                <td class="shutdownVMFinish5"></td>
+                <td class="shutdownVMFinish6"></td>
+                <td>
+                    <button type="button" id="shutdownVMFinish" class="btn btn-primary testBut">开始测试</button>
+                </td>
+            </tr>
+            <tr>
+                <td class="delayForceShutdownVM1">延迟强制关闭虚机</td>
+                <td class="delayForceShutdownVM2 serverSendMessageTd" tag="delayForceShutdownVM">"content": { "header":{
+                    "action":"delayForceShutdownVM"}, "data":{ "tmplId" : "idValue","delayTime" : "timeValue"} }
+                </td>
+                <td class="delayForceShutdownVM3"></td>
+                <td class="delayForceShutdownVM4"></td>
+                <td class="delayForceShutdownVM5"></td>
+                <td class="delayForceShutdownVM6"></td>
+                <td>
+                    <button type="button" id="delayForceShutdownVM" class="btn btn-primary testBut">开始测试</button>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td><input type="text" class="form-control custom1" placeholder="自定义测试"></td>
+                <td>
+                    <textarea class="form-control custom2" rows="3" name=textarea placeholder="报文"></textarea>
+                </td>
+                <td class="custom3"></td>
+                <td class="custom4"></td>
+                <td class="custom5"></td>
+                <td class="custom6"></td>
+                <td>
+                    <button type="button" id="custom" class="btn btn-primary">开始测试</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+</body>
+</html>
