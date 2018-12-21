@@ -29,23 +29,20 @@ public class ShineTestController {
      */
     @RequestMapping("testMethod")
     public ResultResponse<ResShutdownVMVO> testMethod(ReqShutdownVMVO reqShutdownVMVO) {
-        System.out.println("-------开始测试功能（"+reqShutdownVMVO.getTestContent()+"）-------");
+        log.info("开始测试功能->"+reqShutdownVMVO.getTestContent());
         ResultResponse<ResShutdownVMVO> resultResponse=new ResultResponse<>();
 
         try {
             resultResponse.setSuccessData(shineTestService.shutdownVM(reqShutdownVMVO));
-            System.out.println(reqShutdownVMVO.getTestContent()+" 成功！");
         }catch (IOException e){
             resultResponse.setError(RunStatusEnum.TCP_ERROR);
             log.error(RunStatusEnum.TCP_ERROR.getMsg(),e);
-            System.out.println(RunStatusEnum.TCP_ERROR.getMsg());
         }catch (Exception e){
             ResShutdownVMVO resShutdownVMVO=new ResShutdownVMVO();
             resShutdownVMVO.setTestContent(reqShutdownVMVO.getTestContent());
             resShutdownVMVO.setServerSendMessage(reqShutdownVMVO.getServerSendMessage());
             resultResponse.setError(resShutdownVMVO);
             log.error(RunStatusEnum.TEXT_ERROR.getMsg(),e);
-            System.out.println(RunStatusEnum.TEXT_ERROR.getMsg());
         }
         return resultResponse;
     }
@@ -57,13 +54,13 @@ public class ShineTestController {
      */
     @RequestMapping("openServer")
     public ResultResponse<String> openServer(String host,Integer port) {
-        System.out.println("**********准备开启服务端 "+host+":"+port+"*************");
+        log.info("准备开启服务端 ->"+port);
         ResultResponse<String> resultResponse=new ResultResponse<>();
         try {
             shineTestService.openServer(port);
             resultResponse.setSuccessData((RunStatusEnum.SERVER_SUCCESS.getMsg()));
-            System.out.println(RunStatusEnum.SERVER_SUCCESS.getMsg());
-
+            log.info("启动成功->"+port);
+            System.out.println();
         }catch (Exception e){
             resultResponse.setError(RunStatusEnum.SERVER_ERROR);
             log.error(RunStatusEnum.SERVER_ERROR.getMsg(),e);
@@ -78,13 +75,12 @@ public class ShineTestController {
      */
     @RequestMapping("openClient")
     public ResultResponse<String> openClient(String host,Integer port) {
-        System.out.println("**********准备开启客户端 "+host+":"+port+"*************");
+        log.info("准备开启客户端 ->"+host+":"+port);
         ResultResponse<String> resultResponse=new ResultResponse<>();
         try {
             shineTestService.opentClient(host,port);
             resultResponse.setSuccessData(RunStatusEnum.CLIENT_SUCCESS.getMsg());
-            System.out.println(RunStatusEnum.CLIENT_SUCCESS.getMsg());
-
+            log.info(RunStatusEnum.CLIENT_SUCCESS.getMsg());
         }catch (Exception e){
             log.error(RunStatusEnum.CLIENT_ERROR,e);
             resultResponse.setError((RunStatusEnum.CLIENT_ERROR));

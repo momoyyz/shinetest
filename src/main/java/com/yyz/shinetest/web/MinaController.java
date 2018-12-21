@@ -26,7 +26,7 @@ public class MinaController {
      */
     @GetMapping("minaOpenServer")
     public ResultResponse<Boolean> openServer(Integer port) {
-        System.out.println("*****mina 服务端准备开启*****");
+        log.info("mina 服务端准备开启->"+port);
         ResultResponse<Boolean> resultResponse=new ResultResponse<>();
         try {
             //入参检查
@@ -51,7 +51,7 @@ public class MinaController {
      */
     @GetMapping("minaOpenClient")
     public ResultResponse<Boolean> openClient(String host, Integer port) {
-        System.out.println("*****mina 客户端准备开启*****");
+        log.info("mina 客户端准备开启->"+port);
         ResultResponse<Boolean> resultResponse=new ResultResponse<>();
         try {
             //入参检查
@@ -78,7 +78,7 @@ public class MinaController {
      */
     @PostMapping("minaSendMessage")
     public  ResultResponse<Boolean> sendMessage(String message,String testContent) {
-        System.out.println("*****mina 开始测试 ->"+testContent+"*****");
+        log.info("mina 开始测试 ->"+testContent);
         ResultResponse<Boolean> resultResponse=new ResultResponse<>();
         try {
             //入参检查
@@ -105,7 +105,8 @@ public class MinaController {
         try {
             String message=minaServer.returnMessage();
             resultResponse.setSuccessData(message);
-            System.out.println("mina 应答消息："+message);
+            log.info("mina 应答消息："+message);
+            System.out.println();
         }catch (Exception e){
             resultResponse.setError(RunStatusEnum.RETURN_DATA_ERROR);
             log.error(RunStatusEnum.RETURN_DATA_ERROR.getMsg(),e);

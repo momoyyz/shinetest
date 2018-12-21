@@ -1,10 +1,13 @@
 package com.yyz.shinetest.mina;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
-import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 
 public class ServerHandler extends IoHandlerAdapter{
+
+    private final static Logger log = Logger.getLogger(ServerHandler.class);
+
     /**
      * 异常
      * @param session
@@ -13,13 +16,13 @@ public class ServerHandler extends IoHandlerAdapter{
      */
     @Override
     public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-        System.out.println("mina 服务端连接出现异常");
+        log.error("mina 服务端连接出现异常");
     }
 
     /**
      * 服务端接收数据
      * @param session
-     * @param message
+     * @param   message
      * @throws Exception
      */
     @Override
@@ -27,17 +30,16 @@ public class ServerHandler extends IoHandlerAdapter{
             throws Exception {
         String msg = (String)message;
         session.setAttribute("msg",msg);
-        System.out.println("mina 服务端接收到数据：" + msg);
     }
 
     @Override
     public void messageSent(IoSession session, Object message) throws Exception {
-        System.out.println("mina 服务端发送数据");
+        log.info("mina 服务端发送数据");
     }
 
     @Override
     public void sessionClosed(IoSession session) throws Exception {
-        System.out.println("mina 服务端session关闭");
+        log.info("mina 服务端session关闭");
     }
 
 //    @Override
@@ -53,7 +55,7 @@ public class ServerHandler extends IoHandlerAdapter{
 
     @Override
     public void sessionOpened(IoSession session) throws Exception {
-        System.out.println("mina 服务端打开Session用于读写数据");
+        log.info("mina 服务端打开Session用于读写数据");
     }
 
 }

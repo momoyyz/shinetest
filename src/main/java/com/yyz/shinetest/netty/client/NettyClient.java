@@ -10,11 +10,16 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
 @Service
 public class NettyClient {
+
+    private final static Logger log = Logger.getLogger(NettyClient.class);
+
+
     SocketChannel socketChannel;
 
 
@@ -50,11 +55,11 @@ public class NettyClient {
                 if (future.isSuccess()) {
                     // 得到管道，便于通信
                     socketChannel = (SocketChannel) future.channel();
-                    System.out.println("netty 客户端开启成功...");
+                    log.info("netty 客户端开启成功!->"+port);
 
                 }
                 else{
-                    System.out.println("netty 客户端开启失败...");
+                    log.error("netty 客户端开启失败!->"+port);
                 }
                 // 等待客户端链路关闭，就是由于这里会将线程阻塞，导致无法发送信息，所以我这里开了线程
                 future.channel().closeFuture().sync();

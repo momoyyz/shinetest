@@ -32,7 +32,7 @@ public class NettyController {
      */
     @GetMapping("nettyOpenServer")
     public ResultResponse<Boolean> openServer(Integer port) {
-        System.out.println("*****netty 服务端准备开启*****");
+        log.info("netty 服务端准备开启->"+port);
         ResultResponse<Boolean> resultResponse=new ResultResponse<>();
         try {
             //入参检查
@@ -57,7 +57,7 @@ public class NettyController {
      */
     @GetMapping("nettyOpenClient")
     public ResultResponse<Boolean> openClient(String host, Integer port) {
-        System.out.println("*****netty 客户端准备开启*****");
+        log.info("netty 客户端准备开启->"+port);
         ResultResponse<Boolean> resultResponse=new ResultResponse<>();
         try {
             //入参检查
@@ -84,7 +84,7 @@ public class NettyController {
      */
     @PostMapping("nettySendMessage")
     public  ResultResponse<Boolean> sendMessage(String message,String testContent) {
-        System.out.println("*****netty 开始测试 ->"+testContent+"*****");
+        log.info("netty 开始测试 ->"+testContent);
         ResultResponse<Boolean> resultResponse=new ResultResponse<>();
         try {
             //入参检查
@@ -111,7 +111,7 @@ public class NettyController {
         try {
             String message=nettyServer.nettyReturnMessage();
             resultResponse.setSuccessData(message);
-            System.out.println("******netty 应答消息："+message);
+            log.info("netty 应答消息："+message);
         }catch (Exception e){
             resultResponse.setError(RunStatusEnum.RETURN_DATA_ERROR);
             log.error(RunStatusEnum.RETURN_DATA_ERROR.getMsg(),e);

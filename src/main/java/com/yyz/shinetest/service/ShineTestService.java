@@ -1,7 +1,9 @@
 package com.yyz.shinetest.service;
 
+import com.yyz.shinetest.common.utils.ReplaceBlank;
 import com.yyz.shinetest.web.vo.req.ReqShutdownVMVO;
 import com.yyz.shinetest.web.vo.resp.ResShutdownVMVO;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -10,6 +12,8 @@ import java.net.Socket;
 
 @Service
 public class ShineTestService {
+
+    private final static Logger log = Logger.getLogger(ShineTestService.class);
 
     private static ServerSocket server;
 
@@ -28,6 +32,7 @@ public class ShineTestService {
 
     /**
      * 开启客户端
+     *
      * @param host
      * @param port
      * @throws IOException
@@ -45,9 +50,8 @@ public class ShineTestService {
                 out.writeUTF("\"content\": {\"header\":{\"action\":\"shutdownVM\"}}");
                 // 读取来自服务器的信息
                 String accpet = in.readUTF();
-                System.out.println("*************客户端输出提示*************");
-                System.out.println("客户端回应消息：" + "\"content\": {\"header\":{\"action\":\"shutdownVM\"}}");//输出键盘输出内容提示 ，也就是客户端向服务器端发送的消息
-                System.out.println("来自服务器的消息：" + accpet);//输出来自服务器的信息
+                log.info("客户端接收数据：" + accpet);//输出来自服务器的信息
+                System.out.println();
             }
         } finally {
             //关闭Socket监听
@@ -74,13 +78,14 @@ public class ShineTestService {
         /*
         控制台输出提示
          */
-        System.out.println("*************服务端输出提示*************");
-        System.out.println("报文数据：" + reqShutdownVMVO.getServerSendMessage());
+        String message=reqShutdownVMVO.getServerSendMessage();
+        message=ReplaceBlank.replaceBlank(message);
+        log.info("服务端发送数据：：" + message);
         //输出来自客户端的信息
-        System.out.println("客户端应答消息： " + clientData);
-        System.out.println("客户端ip为：" + socket.getInetAddress().getHostAddress() + "端口：" + socket.getLocalPort());
+        log.info("应答消息： " + clientData);
+       // log.info("客户端ip为：" + socket.getInetAddress().getHostAddress() + "端口：" + socket.getLocalPort());
         //把服务器端的输入发给客户端
-        out.writeUTF(reqShutdownVMVO.getServerSendMessage());
+        out.writeUTF(message);
         /*
          *回参准备
          */

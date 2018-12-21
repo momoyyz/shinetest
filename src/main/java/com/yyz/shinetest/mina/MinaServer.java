@@ -1,5 +1,7 @@
 package com.yyz.shinetest.mina;
 
+import com.yyz.shinetest.common.utils.ReplaceBlank;
+import org.apache.log4j.Logger;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoConnector;
@@ -21,6 +23,10 @@ import java.util.Map;
 
 @Service
 public class MinaServer {
+
+    private final static Logger log = Logger.getLogger(MinaServer.class);
+
+
     // 提供服务端实现
     public static IoAcceptor accept = null;
 
@@ -49,7 +55,8 @@ public class MinaServer {
         accept.setHandler(new ServerHandler());
         // 绑定端口并启动
         accept.bind(new InetSocketAddress(port));
-        System.out.println("*****mina 服务端开启成功 ->" + port + "*****");
+
+        log.info("mina 服务端开启成功 ->" + port);
         return true;
     }
 
@@ -77,7 +84,9 @@ public class MinaServer {
         ConnectFuture future = connector.connect(new InetSocketAddress(host, port));
         // 等待我们的连接
         future.awaitUninterruptibly();
-        System.out.println("*****mina 客户端开启成功*****");
+
+        log.info("mina 客户端开启成功->"+port);
+        System.out.println();
         return true;
 
     }
@@ -97,6 +106,8 @@ public class MinaServer {
      * @return
      */
     public Boolean sendConMessage(String message) {
+        //处理换行等
+        message= ReplaceBlank.replaceBlank(message);
 
         IoSession session;
         Map conMap = accept.getManagedSessions();
