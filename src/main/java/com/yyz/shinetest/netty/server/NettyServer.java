@@ -1,35 +1,33 @@
 package com.yyz.shinetest.netty.server;
 
+import com.yyz.shinetest.netty.util.MessageList;
+import com.yyz.shinetest.netty.util.NettySocketHolder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Vector;
 
-public class Server {
+@Service
+public class NettyServer {
+    //服务端要建立两个group，一个负责接收客户端的连接，一个负责处理数据传输
+    //连接处理group
     private EventLoopGroup boss = new NioEventLoopGroup();
+    //事件处理group
     private EventLoopGroup work = new NioEventLoopGroup();
 
-    private static ServerSocketChannel serverSocketChannel;
-
-    public Server(int serverPort){
-        bind(serverPort);
-    }
-
-    private void bind(int serverPort) {
+    public Boolean bind(int serverPort) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                //服务端要建立两个group，一个负责接收客户端的连接，一个负责处理数据传输
-                //连接处理group
-                 //boss = new NioEventLoopGroup();
-                //事件处理group
-                // worker = new NioEventLoopGroup();
                 ServerBootstrap bootstrap = new ServerBootstrap();
                 // 绑定处理group
                 bootstrap.group(boss, work).channel(NioServerSocketChannel.class)
@@ -47,8 +45,8 @@ public class Server {
                                 ChannelPipeline p = sc.pipeline();
                                 p.addLast(
 //										//使用了netty自带的编码器和解码器
-										new StringDecoder(Charset.forName("utf-8")),
-										new StringEncoder(Charset.forName("utf-8")),
+                                        new StringDecoder(Charset.forName("utf-8")),
+                                        new StringEncoder(Charset.forName("utf-8")),
                                         //new MessageDecoder(),
                                         //new MessageEncoder(),
                                         //自定义的处理器
@@ -61,18 +59,16 @@ public class Server {
                 try {
                     future = bootstrap.bind(serverPort).sync();
                     if (future.isSuccess()) {
-                        serverSocketChannel = (ServerSocketChannel) future.channel();
-                        System.out.println("服务端开启成功");
+                        System.out.println("netty 服务端开启成功");
                     } else {
-                        System.out.println("服务端开启失败");
+                        System.out.println("netty 服务端开启失败");
                     }
 
                     //等待服务监听端口关闭,就是由于这里会将线程阻塞，导致无法发送信息，所以我这里开了线程
                     future.channel().closeFuture().sync();
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
-                finally {
+                } finally {
                     //优雅地退出，释放线程池资源
                     boss.shutdownGracefully();
                     work.shutdownGracefully();
@@ -80,6 +76,55 @@ public class Server {
             }
         });
         thread.start();
+        return true;
     }
 
+    /**
+     * netty 服务端发送消息
+     *
+     * @param SendMessage
+     * @return
+     */
+    public Boolean nettySendMessage(String SendMessage) {
+
+        NioSocketChannel socketChannel;
+        Map<Integer, NioSocketChannel> map = NettySocketHolder.getMAP();
+        //发送数据给每一个客户端
+        for (Integer key : map.keySet()) {
+            socketChannel = NettySocketHolder.get(key);
+            if (null == socketChannel) {
+                throw new NullPointerException("netty 没有[" + key + "]的socketChannel");
+            }
+            System.out.println("netty 发送给客户端的数据:" + SendMessage);
+            socketChannel.writeAndFlush(SendMessage);
+
+        }
+        //清理接收数据
+        MessageList.clear();
+        return true;
+    }
+
+    /**
+     * 获取netty客户端数量
+     *
+     * @return
+     */
+    public int getnettyClientNum() {
+
+        return NettySocketHolder.getMAP().size();
+    }
+
+    /**
+     * netty 客户端返回的数据
+     *
+     * @return
+     */
+    public String nettyReturnMessage() throws InterruptedException {
+        Vector<String> message = MessageList.getMessage();
+        while (message.size()==0){
+            Thread.sleep(10);
+            message = MessageList.getMessage();
+        }
+        return message.get(0);
+    }
 }

@@ -1,54 +1,137 @@
 package com.yyz.shinetest.web;
 
-import com.yyz.shinetest.netty.client.Client;
-import com.yyz.shinetest.netty.server.Server;
-import com.yyz.shinetest.netty.util.NettySocketHolder;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.yyz.shinetest.common.enums.RunStatusEnum;
+import com.yyz.shinetest.netty.client.NettyClient;
+import com.yyz.shinetest.netty.server.NettyServer;
+import com.yyz.shinetest.web.vo.ResultResponse;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import javax.servlet.http.HttpSession;
 
 
 @RestController
 public class NettyController {
+    private final static Logger log = Logger.getLogger(NettyController.class);
 
+    @Autowired
+    NettyClient nettyClient;
+    @Autowired
+    NettyServer nettyServer;
 
-    @RequestMapping("nettyServer")
-    protected String messageReceived(String serverStr) {
-
-        new Server(7899);
-        return "success";
-    }
-
-    @RequestMapping("nettyClient")
-    protected String messageRecseived() {
-        new Client(7899, "127.0.0.1");
-
-        return "success";
-    }
-
-    @RequestMapping("nettySendMessage")
-    protected String messagweReceived(String serverStr) {
-        NioSocketChannel socketChannel;
-        Map<Integer, NioSocketChannel> map = NettySocketHolder.getMAP();
-        //发送数据给每一个客户端
-        for (Integer key : map.keySet()) {
-            socketChannel = NettySocketHolder.get(key);
-            if (null == socketChannel) {
-                throw new NullPointerException("没有[" + 1 + "]的socketChannel");
+    @Autowired
+    public  HttpSession session;
+    /**
+     * 开启服务端
+     * @param port
+     * @return
+     */
+    @GetMapping("nettyOpenServer")
+    public ResultResponse<Boolean> openServer(Integer port) {
+        System.out.println("*****netty 服务端准备开启*****");
+        ResultResponse<Boolean> resultResponse=new ResultResponse<>();
+        try {
+            //入参检查
+            if(!StringUtils.isEmpty(port)){
+                resultResponse.setSuccessData( nettyServer.bind(port));
+            }else{
+                resultResponse.setError(RunStatusEnum.ARG_NULL_ERROR);
+                log.error(RunStatusEnum.ARG_NULL_ERROR.getMsg());
             }
-            String message = "to Client";
-            System.out.println("发送给客户端的数据:" + message);
-            ChannelFuture future = socketChannel.writeAndFlush(message);
+        }catch (Exception e){
+            log.error(RunStatusEnum.SERVER_ERROR.getMsg(),e);
         }
-        return "success";
+        return resultResponse;
+
     }
 
+    /**
+     * 开启客户端
+     * @param host
+     * @param port
+     * @return
+     */
+    @GetMapping("nettyOpenClient")
+    public ResultResponse<Boolean> openClient(String host, Integer port) {
+        System.out.println("*****netty 客户端准备开启*****");
+        ResultResponse<Boolean> resultResponse=new ResultResponse<>();
+        try {
+            //入参检查
+            if(!StringUtils.isEmpty(port)&&!StringUtils.isEmpty(host)){
+                resultResponse.setSuccessData( nettyClient.start(host,port));
+            }else{
+                resultResponse.setError(RunStatusEnum.ARG_NULL_ERROR);
+                log.error(RunStatusEnum.ARG_NULL_ERROR.getMsg());
+            }
+
+        }catch (Exception e){
+            resultResponse.setError(RunStatusEnum.CLIENT_ERROR);
+            log.error(RunStatusEnum.CLIENT_ERROR.getMsg(),e);
+        }
+        return resultResponse;
+
+    }
+
+    /**
+     * netty 服务端发送消息
+     * @param message
+     * @return
+     * @throws InterruptedException
+     */
+    @PostMapping("nettySendMessage")
+    public  ResultResponse<Boolean> sendMessage(String message,String testContent) {
+        System.out.println("*****netty 开始测试 ->"+testContent+"*****");
+        ResultResponse<Boolean> resultResponse=new ResultResponse<>();
+        try {
+            //入参检查
+            if(!StringUtils.isEmpty(message)&&!StringUtils.isEmpty(testContent)){
+                resultResponse.setSuccessData(nettyServer.nettySendMessage(message));
+            }else{
+                resultResponse.setError(RunStatusEnum.ARG_NULL_ERROR);
+                log.error(RunStatusEnum.ARG_NULL_ERROR.getMsg());
+            }
+        }catch (Exception e){
+            resultResponse.setError(RunStatusEnum.SEND_MESSAGE_ERROR);
+            log.error(RunStatusEnum.SEND_MESSAGE_ERROR.getMsg(),e);
+        }
+        return resultResponse;
+    }
+
+    /**
+     * 应答消息
+     * @return
+     */
+    @GetMapping("nettyReturnMessage")
+    public  ResultResponse<String> returnMessage(){
+        ResultResponse<String> resultResponse=new ResultResponse<>();
+        try {
+            String message=nettyServer.nettyReturnMessage();
+            resultResponse.setSuccessData(message);
+            System.out.println("******netty 应答消息："+message);
+        }catch (Exception e){
+            resultResponse.setError(RunStatusEnum.RETURN_DATA_ERROR);
+            log.error(RunStatusEnum.RETURN_DATA_ERROR.getMsg(),e);
+        }
+        return resultResponse;
+    }
+
+    /**
+     * 获取客户数量
+     * @return
+     */
+    @GetMapping("nettyGetClientNum")
+    public  ResultResponse<Integer> getClientNum(){
+        ResultResponse<Integer> resultResponse=new ResultResponse<>();
+        try {
+            resultResponse.setSuccessData(nettyServer.getnettyClientNum());
+        }catch (Exception e){
+            resultResponse.setError(RunStatusEnum.CLIENT_NUM_ERROR);
+            log.error(RunStatusEnum.CLIENT_NUM_ERROR.getMsg(),e );
+        }
+        return resultResponse;
+    }
 }

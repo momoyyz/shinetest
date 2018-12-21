@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Shine测试</title>
+    <title>Shine测试-mina</title>
     <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
     <script src="./bootstrap/js/jquery-3.3.1.min.js"></script>
     <script>
@@ -31,205 +31,294 @@
             /**
              * 自定义测试
              * */
-             customTest();
-             });
+            customTest();
+        });
 
-             /**
-             *点击测试按钮后执行
-             * */
-            function testButFunction() {
-                /*
-                *获取当前id
-                */
+        /**
+         *点击测试按钮后执行
+         * */
+        function testButFunction() {
+            /*
+            *获取当前id
+            */
+            var id = $(this).attr("id");
+            /*
+            *准备参数
+            */
+            var testContent = $("." + id + "1").html();
+            var serverSendMessage = $("." + id + "2").html();
+            var testNum = $("." + id + "6").html();
+            if (!testNum) {
+                testNum = 0;
+            }
+            if (!serverSendMessage || $.trim(serverSendMessage) == "") {
+                alert("报文不能为空");
+                return false;
+            }
+            /*
+            清空数
+             */
+            $("#" + id).parent().siblings().html("");
+            $.ajax({
+                url: "nettySendMessage",
+                data: {
+                    testContent: testContent,
+                    message: serverSendMessage,
+                    // testNum: testNum
+                },
+                type: "post",
+                dataType: "json",
+                success: function (json) {
+
+                    /*
+                    *参数回显
+                     */
+                    if (json.status) {
+                        $("." + id + "1").html(testContent);
+                        $("." + id + "2").html(serverSendMessage);
+                          $("." + id + "3").html(json.msg);
+                        $("." + id + "5").html(json.status);
+                        $("." + id + "6").html(Number(testNum) + 1);
+                        returnMessage(id);
+                    } else {
+                        $("." + id + "1").html(testContent);
+                        $("." + id + "2").html(serverSendMessage);
+                         $("." + id + "3").html(json.msg);
+                    }
+
+
+                },
+                error: function () {
+                    alert("测试失败")
+                }
+            })
+        }
+
+        /***
+         * 失去焦点数据同步
+         */
+        function blurPortInput() {
+
+            $(".inputPort").blur(function () {
                 var id = $(this).attr("id");
+                var val = $("#" + id).val();
+                if (id == "inputPortServer") {
+                    $("#inputPortClient").val(val);
+                } else {
+                    $("#inputPortServer").val(val);
+                }
+                $("#openServer").removeAttr("disabled");
+                $("#openClient").removeAttr("disabled");
+
+            });
+        }
+
+        /**
+         * 开启服务
+         */
+        function clientOrServer() {
+            var id = $(this).attr("id");
+            var msgClass = id + "Msg";
+            var url;
+            if (id == "openServer") {
+                url="nettyOpenServer";
+                $("." + msgClass).html("服务器启动中！");
+            } else {
+                url="nettyOpenClient";
+                $("." + msgClass).html("客户端启动中！");
+            }
+
+            $.ajax({
+                url: url,
+                data: {
+                    port: $("." + id + "Port").val(),
+                    host: $("." + id + "Host").val()
+                },
+                type: "get",
+                dataType: "json",
+                success: function (json) {
+                    if (json.data) {
+                        $("#" + id).attr("disabled", "true")
+                        if (id == "openServer") {
+                            $("." + msgClass).html("服务端已启动！");
+                        } else {
+                            $("." + msgClass).html("客户端已启动！");
+                            $("#" + id).removeAttr("disabled")
+                        }
+                    } else {
+                        if (id == "openServer") {
+                            $("." + msgClass).html("服务端启动失败，或重复启动");
+                        } else {
+                            $("." + msgClass).html("客户端启动失败！");
+                        }
+                    }
+
+                },
+                error: function (json) {
+                    // alert("启动失败")
+                }
+            })
+        }
+
+        /**
+         *可编辑
+         * */
+        function serverSendMessageTd() {
+            var id = $(this).attr("tag");
+            var val = $("." + id + "2").html();
+            var html = ' <textarea class="form-control ' + id + '7 " rows="7" name=textarea>' + val + '</textarea>';
+            var regExt = new RegExp(/textarea/);//判断用户名是否合法
+            var ifTrue = regExt.test(val);
+            if (ifTrue) {
+                //  f(id);
+            } else {
+                $("." + id + "2").html(html);
+            }
+
+        }
+
+        /**
+         *鼠标移开
+         */
+        function mouseoutTo() {
+            var id = $(this).attr("tag");
+            $("." + id + "2").mouseleave(function () {
+                f(id);
+            });
+        }
+
+        function f(id) {
+            var val = $("." + id + "7").val();
+            $("." + id + "2").html(val);
+        }
+
+        /**
+         * 自定义测试
+         * */
+        function customTest() {
+            $("#custom").click(function () {
+
+                var id = "custom";
                 /*
-                *准备参数
-                */
-                var testContent = $("." + id + "1").html();
-                var serverSendMessage = $("." + id + "2").html();
+                  *准备参数
+                  */
+                var testContent = $("." + id + "1").val();
+                var serverSendMessage = $("." + id + "2").val();
                 var testNum = $("." + id + "6").html();
                 if (!testNum) {
                     testNum = 0;
                 }
-                if(!serverSendMessage||$.trim(serverSendMessage)==""){
-                    alert("报文不能为空")
+                if (!serverSendMessage || $.trim(serverSendMessage) == "") {
+                    alert("报文不能为空");
+                    return false;
+                }
+                if (!testContent || $.trim(testContent) == "") {
+                    alert("测试功能说明不能问空");
                     return false;
                 }
                 /*
                 清空数
                  */
-                $("#" + id).parent().siblings().html("");
+                // $("#" + id).parent().siblings().html("");
                 $.ajax({
-                    url: "testMethod",
+                    url: "nettySendMessage",
                     data: {
                         testContent: testContent,
-                        serverSendMessage: serverSendMessage,
-                        testNum: testNum
+                        message: serverSendMessage,
+                        //testNum: testNum
                     },
-                    type: "get",
+                    type: "post",
                     dataType: "json",
                     success: function (json) {
-
                         /*
                         *参数回显
                          */
-                      if(json.status){
-                          $("." + id + "1").html(json.data.testContent);
-                          $("." + id + "2").html(json.data.serverSendMessage);
-                          $("." + id + "3").html(json.msg);
-                          $("." + id + "4").html(json.data.clientReturnMessage);
-                          $("." + id + "5").html(json.status);
-                          $("." + id + "6").html(json.data.testNum);
-                      }else {
-                          $("." + id + "1").html(json.data.testContent);
-                          $("." + id + "2").html(json.data.serverSendMessage);
-                          $("." + id + "3").html(json.msg);
-                      }
-
-
-                    },
-                    error: function () {
-                        alert("测试失败")
-                    }
-                })
-            }
-
-            /***
-             * 失去焦点数据同步
-             */
-            function blurPortInput() {
-
-                $(".inputPort").blur(function () {
-                    var id = $(this).attr("id");
-                    var val = $("#" + id).val();
-                    if (id == "inputPortServer") {
-                        $("#inputPortClient").val(val);
-                    } else {
-                        $("#inputPortServer").val(val);
-                    }
-
-                });
-            }
-
-            /**
-             * 开启服务
-             */
-            function clientOrServer() {
-                var id = $(this).attr("id");
-                var msgClass = id + "Msg";
-                if (id == "openServer") {
-                    $("." + msgClass).html("服务器启动中，等待客户端连接！");
-                } else {
-                    $("." + msgClass).html("客户端已启动！");
-                }
-
-                $.ajax({
-                    url: id,
-                    data: {
-                        port: $("." + id + "Port").val(),
-                        host: $("." + id + "Host").val()
-                    },
-                    type: "get",
-                    dataType: "json",
-                    success: function (json) {
-                        if (json.status) {
-                            if (id == "openServer") {
-                                $("." + msgClass).html("服务端已启动！");
-                            }
-                        } else {
-                            if (id == "openServer") {
-                                $("." + msgClass).html("服务端启动失败，或重复启动");
-                            }
-                        }
-
+                        // $("." + id + "1").val(json.data.testContent);
+                        // $("." + id + "2").val(json.data.serverSendMessage);
+                        $("." + id + "3").html(json.msg);
+                        // $("." + id + "4").html(json.data.clientReturnMessage);
+                        $("." + id + "5").html(json.status);
+                        $("." + id + "6").html(Number(testNum) + 1);
+                        returnMessage(id);
                     },
                     error: function (json) {
+
                     }
                 })
-            }
+            })
+        }
 
-            function serverSendMessageTd() {
-                var id = $(this).attr("tag");
-                var val = $("." + id + "2").html();
-                var html = ' <textarea class="form-control ' + id + '7 " rows="7" name=textarea>' + val + '</textarea>';
-                var regExt = new RegExp(/textarea/);//判断用户名是否合法
-                var ifTrue = regExt.test(val);
-                if (ifTrue) {
-                    //  f(id);
-                } else {
-                    $("." + id + "2").html(html);
+        /**
+         * 添加客户端
+         */
+        function addClient() {
+
+            $.ajax({
+                url: "nettyOpenClient",
+                data: {
+                    port: $(".openClientPort").val(),
+                    host: $(".openClientHost").val()
+                },
+                type: "get",
+                dataType: "json",
+                success: function (json) {
+                    if(json.data){
+                        getClientNum()
+                    }
+                },
+                error: function (json) {
                 }
+            })
+        }
 
-            }
+        /**
+         * 获取客户端数量
+         */
+        function getClientNum() {
 
-            function mouseoutTo() {
-                var id = $(this).attr("tag");
-                $("." + id + "2").mouseleave(function () {
-                    f(id);
-                });
-            }
-
-            function f(id) {
-                var val = $("." + id + "7").val();
-                $("." + id + "2").html(val);
-            }
-
-            function customTest() {
-                $("#custom").click(function () {
-
-                    var id = "custom";
-                    /*
-                      *准备参数
-                      */
-                    var testContent = $("." + id + "1").val();
-                    var serverSendMessage = $("." + id + "2").val();
-                    var testNum = $("." + id + "6").html();
-                    if (!testNum) {
-                        testNum = 0;
+            $.ajax({
+                url: "nettyGetClientNum",
+                type: "get",
+                dataType: "json",
+                success: function (json) {
+                    if(json.status){
+                        $(".openClientMsg").html("客户端数量为："+json.data);
+                    }else {
+                        $(".openClientMsg").html("客户添加失败");
                     }
-                    if(!serverSendMessage||$.trim(serverSendMessage)==""){
-                        alert("报文不能为空");
-                        return false;
+                },
+                error: function (json) {
+                }
+            })
+        }
+        function returnMessage(id) {
+            $.ajax({
+                url: "nettyReturnMessage",
+                type: "get",
+                dataType: "json",
+                success: function (json) {
+                    if(json.status){
+                        $("." + id + "4").html(json.data);
+                    }else {
+                        $("." + id + "4").html("返回数据失败");
                     }
-                    if(!testContent||$.trim(testContent)==""){
-                        alert("测试功能说明不能问空");
-                        return false;
-                    }
-                    /*
-                    清空数
-                     */
-                   // $("#" + id).parent().siblings().html("");
-                    $.ajax({
-                        url: "testMethod",
-                        data: {
-                            testContent: testContent,
-                            serverSendMessage: serverSendMessage,
-                            testNum: testNum
-                        },
-                        type: "get",
-                        dataType: "json",
-                        success: function (json) {
-                            /*
-                            *参数回显
-                             */
-                            // $("." + id + "1").val(json.data.testContent);
-                            // $("." + id + "2").val(json.data.serverSendMessage);
-                            $("." + id + "3").html(json.msg);
-                            $("." + id + "4").html(json.data.clientReturnMessage);
-                            $("." + id + "5").html(json.status);
-                            $("." + id + "6").html(json.data.testNum);
-
-                        },
-                        error: function (json) {
-
-                        }
-                    })
-                })
+                },
+                error: function (json) {
+                }
+            })
         }
     </script>
 </head>
 <body style="background-color: #f5f5f5">
 <div class="container" style="background-color: #fff">
+
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-5 h1 center-block">Shine测试-netty&nbsp;&nbsp;
+            <a class="btn btn-default" href="index.html" role="button">返回</a>
+            <a class="btn btn-default" href="mina.html" role="button">mina</a></div>
+        <div class="col-md-3 h1"></div>
+    </div>
     <div class="row">
         <div class="col-md-2"></div>
         <div class="col-md-8">
@@ -240,33 +329,29 @@
                     <th width="50%">操作</th>
                 </tr>
                 <tr>
-                    <td><input type="text" class="form-control openServerHost" value="localhost" placeholder="服务端地址"
+                    <td><input type="text" class="form-control openServerHost" value="127.0.0.1" placeholder="服务端地址"
                                readonly></td>
                     <td><input type="text" id="inputPortServer" class="form-control inputPort openServerPort"
-                               value="8888" placeholder="服务端端口"></td>
+                               value="8989" placeholder="服务端端口"></td>
                     <td>
                         <button type="button" id="openServer" class="btn btn-success openBut">开启服务端</button>
                         <span class="openServerMsg"></span>
                     </td>
                 </tr>
                 <tr>
-                    <td><input type="email" class="form-control openClientHost" value="localhost" placeholder="客户端地址"
+                    <td><input type="email" class="form-control openClientHost" value="127.0.0.1" placeholder="客户端地址"
                                readonly></td>
                     <td><input type="email" id="inputPortClient" class="form-control inputPort openClientPort"
-                               value="8888" placeholder="客户端端口"></td>
+                               value="8989" placeholder="客户端端口"></td>
                     <td>
                         <button type="button" id="openClient" class="btn btn-success openBut">开启客户端</button>
+                        <button type="button" id="addClient" onclick="addClient()" class="btn btn-success">添加</button>
                         <span class="openClientMsg"></span>
                     </td>
                 </tr>
             </table>
         </div>
         <div class="col-md-2"></div>
-    </div>
-    <div class="row">
-        <div class="col-md-4"></div>
-        <div class="col-md-4 h1 center-block">Shine测试</div>
-        <div class="col-md-4 h1"></div>
     </div>
     <div class="row">
         <table class="table table-striped table-hover table-bordered">

@@ -1,5 +1,6 @@
 package com.yyz.shinetest.netty.server;
 
+import com.yyz.shinetest.netty.util.MessageList;
 import com.yyz.shinetest.netty.util.NettyConfig;
 import com.yyz.shinetest.netty.util.NettySocketHolder;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,7 +33,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("客户端与服务端连接关闭...");
+        System.out.println("netty 客户端与服务端连接关闭...");
         NettyConfig.group.remove(ctx.channel());
     }
 
@@ -50,7 +51,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.out.println("******server exceptionCaught");
+        System.out.println("******netty server exceptionCaught");
         cause.printStackTrace();
         ctx.close();
     }
@@ -73,7 +74,9 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 //    }
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
-        System.out.println("服务到接收到的数据：" + s);
+        MessageList.add(s);
+        System.out.println("netty 服务到接收到的数据：" + s);
+
     }
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) {
@@ -89,4 +92,6 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         System.out.println("******server channelWritabilityChanged");
     }
+
+
 }

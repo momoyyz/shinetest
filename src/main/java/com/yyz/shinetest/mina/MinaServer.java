@@ -49,7 +49,7 @@ public class MinaServer {
         accept.setHandler(new ServerHandler());
         // 绑定端口并启动
         accept.bind(new InetSocketAddress(port));
-        System.out.println("*****服务端开启成功 ->" + port + "*****");
+        System.out.println("*****mina 服务端开启成功 ->" + port + "*****");
         return true;
     }
 
@@ -77,7 +77,7 @@ public class MinaServer {
         ConnectFuture future = connector.connect(new InetSocketAddress(host, port));
         // 等待我们的连接
         future.awaitUninterruptibly();
-        System.out.println("*****客户端开启成功*****");
+        System.out.println("*****mina 客户端开启成功*****");
         return true;
 
     }
