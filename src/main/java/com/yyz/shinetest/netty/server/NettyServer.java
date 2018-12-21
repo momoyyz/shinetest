@@ -109,11 +109,12 @@ public class NettyServer {
                 log.error("netty 没有[" + key + "]的socketChannel");
                 throw new NullPointerException("netty 没有[" + key + "]的socketChannel");
             }
-            log.info("netty 服务端发送数据:" + SendMessage);
+
             socketChannel.writeAndFlush(SendMessage);
 
         }
-
+        int clientNUm=getnettyClientNum();
+        log.info("netty 服务端向《"+clientNUm+"》个客户端发送数据:" + SendMessage);
         return true;
     }
 

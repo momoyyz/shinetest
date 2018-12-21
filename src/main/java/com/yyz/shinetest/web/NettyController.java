@@ -109,6 +109,7 @@ public class NettyController {
             String message=nettyServer.nettyReturnMessage();
             resultResponse.setSuccessData(message);
             log.info("netty 应答消息："+message);
+            System.out.println();
         }catch (Exception e){
             resultResponse.setError(RunStatusEnum.RETURN_DATA_ERROR);
             log.error(RunStatusEnum.RETURN_DATA_ERROR.getMsg(),e);
