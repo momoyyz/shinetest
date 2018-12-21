@@ -22,9 +22,6 @@ public class NettyController {
     NettyClient nettyClient;
     @Autowired
     NettyServer nettyServer;
-
-    @Autowired
-    public  HttpSession session;
     /**
      * 开启服务端
      * @param port
