@@ -42,6 +42,11 @@ public class ResultResponse<T> implements Serializable {
         this.setStatus(RunStatusEnum.TEXT_ERROR.getStatus());
         this.setData(t);
     }
+    public void setError(String error) {
+        this.setCode(RunStatusEnum.TEXT_ERROR.getCode());
+        this.setMsg(error);
+        this.setStatus(RunStatusEnum.TEXT_ERROR.getStatus());
+    }
 
     public void setError(RunStatusEnum error) {
         this.setCode(error.getCode());

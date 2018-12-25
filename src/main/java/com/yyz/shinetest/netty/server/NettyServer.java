@@ -102,6 +102,9 @@ public class NettyServer {
         SendMessage= ReplaceBlank.replaceBlank(SendMessage);
         NioSocketChannel socketChannel;
         Map<Integer, NioSocketChannel> map = NettySocketHolder.getMAP();
+        if(map.size()==0){
+            throw new NullPointerException("没有客户端连接！");
+        }
         //发送数据给每一个客户端
         for (Integer key : map.keySet()) {
             socketChannel = NettySocketHolder.get(key);

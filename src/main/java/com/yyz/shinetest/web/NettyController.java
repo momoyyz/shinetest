@@ -92,7 +92,7 @@ public class NettyController {
                 log.error(RunStatusEnum.ARG_NULL_ERROR.getMsg());
             }
         }catch (Exception e){
-            resultResponse.setError(RunStatusEnum.SEND_MESSAGE_ERROR);
+            resultResponse.setError(e.getMessage());
             log.error(RunStatusEnum.SEND_MESSAGE_ERROR.getMsg(),e);
         }
         return resultResponse;
