@@ -3,7 +3,6 @@ package com.yyz.shinetest.netty.server;
 import com.yyz.shinetest.netty.util.MessageList;
 import com.yyz.shinetest.netty.util.NettyConfig;
 import com.yyz.shinetest.netty.util.NettySocketHolder;
-import com.yyz.shinetest.web.MinaController;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -24,12 +23,8 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
         System.out.println();
         //保存用户channel
        int size= NettySocketHolder.getMAP().size();
-        if(size==0){
-            NettySocketHolder.put(1, (NioSocketChannel) ctx.channel());
-        }else{
-            NettySocketHolder.put(size+1, (NioSocketChannel) ctx.channel());
 
-        }
+       NettySocketHolder.put(size+1, (NioSocketChannel) ctx.channel());
     }
 
     /**
